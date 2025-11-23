@@ -31,6 +31,8 @@ namespace Windows_365_Ethernet_Redirection
             btnConnect = new Button();
             chkDebugOutput = new CheckBox();
             chkEnableVpn = new CheckBox();
+            txtSubnet = new TextBox();
+            lblSubnet = new Label();
             txtDebugOutput = new TextBox();
             lblStatus = new Label();
             SuspendLayout();
@@ -63,10 +65,28 @@ namespace Windows_365_Ethernet_Redirection
             chkEnableVpn.CheckState = CheckState.Checked;
             chkEnableVpn.Location = new Point(310, 17);
             chkEnableVpn.Name = "chkEnableVpn";
-            chkEnableVpn.Size = new Size(200, 19);
+            chkEnableVpn.Size = new Size(150, 19);
             chkEnableVpn.TabIndex = 4;
-            chkEnableVpn.Text = "Auto-start VPN Tunnel (All Traffic)";
+            chkEnableVpn.Text = "Auto-start VPN Tunnel";
             chkEnableVpn.UseVisualStyleBackColor = true;
+            // 
+            // lblSubnet
+            // 
+            lblSubnet.AutoSize = true;
+            lblSubnet.Location = new Point(470, 18);
+            lblSubnet.Name = "lblSubnet";
+            lblSubnet.Size = new Size(47, 15);
+            lblSubnet.TabIndex = 5;
+            lblSubnet.Text = "Subnet:";
+            // 
+            // txtSubnet
+            // 
+            txtSubnet.Location = new Point(523, 15);
+            txtSubnet.Name = "txtSubnet";
+            txtSubnet.PlaceholderText = "0.0.0.0/0 (all traffic)";
+            txtSubnet.Size = new Size(130, 23);
+            txtSubnet.TabIndex = 6;
+            txtSubnet.Text = "0.0.0.0/0";
             // 
             // txtDebugOutput
             // 
@@ -96,6 +116,8 @@ namespace Windows_365_Ethernet_Redirection
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(663, 331);
+            Controls.Add(txtSubnet);
+            Controls.Add(lblSubnet);
             Controls.Add(chkEnableVpn);
             Controls.Add(lblStatus);
             Controls.Add(txtDebugOutput);
@@ -113,6 +135,8 @@ namespace Windows_365_Ethernet_Redirection
         private Button btnConnect;
         private CheckBox chkDebugOutput;
         private CheckBox chkEnableVpn;
+        private TextBox txtSubnet;
+        private Label lblSubnet;
         private TextBox txtDebugOutput;
         private Label lblStatus;
     }

@@ -15,6 +15,8 @@ namespace Windows_365_Ethernet_Redirection
         public event Action<string>? OnLog;
         public bool IsRunning => _isRunning && _vpnProcess != null && !_vpnProcess.HasExited;
 
+        private string _subnet = "0.0.0.0/0";
+
         public SocksToVpnManager()
         {
             // Look for the executable in the application directory
@@ -22,7 +24,7 @@ namespace Windows_365_Ethernet_Redirection
             _executablePath = Path.Combine(appDir, "SocksToVPN", "tun2socks.exe");
         }
 
-        public async Task<bool> StartAsync(string socksAddress, int socksPort)
+        public async Task<bool> StartAsync(string socksAddress, int socksPort, string subnet = "0.0.0.0/0")
         {
             if (_isRunning)
             {
@@ -47,7 +49,11 @@ namespace Windows_365_Ethernet_Redirection
 
             try
             {
+                // Store subnet for cleanup later
+                _subnet = subnet;
+                
                 Log("Starting SOCKS to VPN tunnel...");
+                Log($"Routing subnet: {_subnet}");
 
                 var startInfo = new ProcessStartInfo
                 {
@@ -129,11 +135,19 @@ namespace Windows_365_Ethernet_Redirection
                 await Task.Delay(1000);
                 
                 // Configure routing to redirect traffic through the TUN interface
-                Log("Configuring routing...");
-                ExecuteCommand("netsh", "interface ipv4 add route 0.0.0.0/0 \"wintun\" 192.168.123.1 metric=1");
+                Log($"Configuring routing for {_subnet}...");
+                ExecuteCommand("netsh", $"interface ipv4 add route {_subnet} \"wintun\" 192.168.123.1 metric=1");
                 
                 Log("Network interface configuration complete");
-                Log("All network traffic will now be routed through the SOCKS proxy");
+                
+                if (_subnet == "0.0.0.0/0")
+                {
+                    Log("All network traffic will now be routed through the SOCKS proxy");
+                }
+                else
+                {
+                    Log($"Traffic to {_subnet} will be routed through the SOCKS proxy");
+                }
             }
             catch (Exception ex)
             {
@@ -204,7 +218,7 @@ namespace Windows_365_Ethernet_Redirection
                 try
                 {
                     Log("Removing routing configuration...");
-                    ExecuteCommand("netsh", "interface ipv4 delete route 0.0.0.0/0 \"wintun\"");
+                    ExecuteCommand("netsh", $"interface ipv4 delete route {_subnet} \"wintun\"");
                 }
                 catch (Exception ex)
                 {

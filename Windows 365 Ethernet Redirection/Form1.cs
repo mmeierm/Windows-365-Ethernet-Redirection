@@ -60,10 +60,27 @@ namespace Windows_365_Ethernet_Redirection
                     // Start VPN tunnel if checkbox is enabled
                     if (chkEnableVpn != null && chkEnableVpn.Checked && _vpnManager != null)
                     {
-                        bool vpnStarted = await _vpnManager.StartAsync("127.0.0.1", _socksServer.SocksPort);
+                        // Get subnet from textbox, default to 0.0.0.0/0 if empty
+                        string subnet = string.IsNullOrWhiteSpace(txtSubnet?.Text) ? "0.0.0.0/0" : txtSubnet.Text.Trim();
+                        
+                        // Validate subnet format
+                        if (!IsValidSubnet(subnet))
+                        {
+                            LogMessage($"WARNING: Invalid subnet format '{subnet}', using default 0.0.0.0/0", alwaysShow: true);
+                            subnet = "0.0.0.0/0";
+                        }
+                        
+                        bool vpnStarted = await _vpnManager.StartAsync("127.0.0.1", _socksServer.SocksPort, subnet);
                         if (vpnStarted)
                         {
-                            LogMessage("VPN tunnel active - all traffic is now routed through RDP connection", alwaysShow: true);
+                            if (subnet == "0.0.0.0/0")
+                            {
+                                LogMessage("VPN tunnel active - all traffic is now routed through RDP connection", alwaysShow: true);
+                            }
+                            else
+                            {
+                                LogMessage($"VPN tunnel active - {subnet} traffic is now routed through RDP connection", alwaysShow: true);
+                            }
                         }
                         else
                         {
@@ -76,6 +93,41 @@ namespace Windows_365_Ethernet_Redirection
                         LogMessage("Configure your browser to use SOCKS5 proxy: 127.0.0.1:" + _socksServer.SocksPort, alwaysShow: true);
                     }
                 }
+            }
+        }
+
+        private bool IsValidSubnet(string subnet)
+        {
+            try
+            {
+                // Simple validation: check format x.x.x.x/y
+                if (string.IsNullOrWhiteSpace(subnet))
+                    return false;
+
+                var parts = subnet.Split('/');
+                if (parts.Length != 2)
+                    return false;
+
+                // Validate IP address part
+                var ipParts = parts[0].Split('.');
+                if (ipParts.Length != 4)
+                    return false;
+
+                foreach (var ipPart in ipParts)
+                {
+                    if (!int.TryParse(ipPart, out int octet) || octet < 0 || octet > 255)
+                        return false;
+                }
+
+                // Validate prefix length
+                if (!int.TryParse(parts[1], out int prefix) || prefix < 0 || prefix > 32)
+                    return false;
+
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -106,10 +158,15 @@ namespace Windows_365_Ethernet_Redirection
             lblStatus.Text = connected ? "Status: Connected" : "Status: Disconnected";
             lblStatus.ForeColor = connected ? Color.Green : Color.Black;
             
-            // Disable VPN checkbox when connected
+            // Disable VPN checkbox and subnet field when connected
             if (chkEnableVpn != null)
             {
                 chkEnableVpn.Enabled = !connected;
+            }
+            
+            if (txtSubnet != null)
+            {
+                txtSubnet.Enabled = !connected;
             }
         }
 
