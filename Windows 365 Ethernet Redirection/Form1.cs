@@ -3,6 +3,7 @@ namespace Windows_365_Ethernet_Redirection
     public partial class Form1 : Form
     {
         private SocksServer? _socksServer;
+        private SocksToVpnManager? _vpnManager;
         private bool _debugEnabled = false;
 
         public Form1()
@@ -15,6 +16,9 @@ namespace Windows_365_Ethernet_Redirection
         {
             _socksServer = new SocksServer();
             _socksServer.OnLog += SocksServer_OnLog;
+
+            _vpnManager = new SocksToVpnManager();
+            _vpnManager.OnLog += VpnManager_OnLog;
         }
 
         private void btnConnect_Click(object sender, EventArgs e)
@@ -24,7 +28,12 @@ namespace Windows_365_Ethernet_Redirection
 
             if (_socksServer.IsConnected)
             {
-                // Disconnect
+                // Disconnect - stop VPN tunnel first
+                if (_vpnManager != null && _vpnManager.IsRunning)
+                {
+                    _vpnManager.Stop();
+                }
+
                 _socksServer.Stop();
                 UpdateUI(false);
                 LogMessage("Disconnected", alwaysShow: true);
@@ -46,8 +55,25 @@ namespace Windows_365_Ethernet_Redirection
                 }
                 else
                 {
-                    LogMessage("Connected!", alwaysShow: true);
-                    LogMessage("Starting VPN Connection", alwaysShow: true);
+                    LogMessage($"Connected! SOCKS proxy running on 127.0.0.1:{_socksServer.SocksPort}", alwaysShow: true);
+                    
+                    // Start VPN tunnel if checkbox is enabled
+                    if (chkEnableVpn != null && chkEnableVpn.Checked && _vpnManager != null)
+                    {
+                        bool vpnStarted = _vpnManager.Start("127.0.0.1", _socksServer.SocksPort);
+                        if (vpnStarted)
+                        {
+                            LogMessage("VPN tunnel active - all traffic is now routed through RDP connection", alwaysShow: true);
+                        }
+                        else
+                        {
+                            LogMessage("WARNING: Failed to start VPN tunnel. You can still use the SOCKS proxy manually.", alwaysShow: true);
+                        }
+                    }
+                    else
+                    {
+                        LogMessage("Configure your browser to use SOCKS5 proxy: 127.0.0.1:" + _socksServer.SocksPort, alwaysShow: true);
+                    }
                 }
             }
         }
@@ -78,6 +104,12 @@ namespace Windows_365_Ethernet_Redirection
             btnConnect.Text = connected ? "Disconnect" : "Connect";
             lblStatus.Text = connected ? "Status: Connected" : "Status: Disconnected";
             lblStatus.ForeColor = connected ? Color.Green : Color.Black;
+            
+            // Disable VPN checkbox when connected
+            if (chkEnableVpn != null)
+            {
+                chkEnableVpn.Enabled = !connected;
+            }
         }
 
         private void SocksServer_OnLog(string message)
@@ -89,6 +121,16 @@ namespace Windows_365_Ethernet_Redirection
                               message.Contains("stopped", StringComparison.OrdinalIgnoreCase) ||
                               message.Contains("error", StringComparison.OrdinalIgnoreCase) ||
                               message.Contains("failed", StringComparison.OrdinalIgnoreCase);
+
+            LogMessage(message, alwaysShow: isImportant);
+        }
+
+        private void VpnManager_OnLog(string message)
+        {
+            // VPN messages are usually important
+            bool isImportant = message.Contains("VPN", StringComparison.OrdinalIgnoreCase) ||
+                              message.Contains("tunnel", StringComparison.OrdinalIgnoreCase) ||
+                              message.Contains("error", StringComparison.OrdinalIgnoreCase);
 
             LogMessage(message, alwaysShow: isImportant);
         }
@@ -113,6 +155,11 @@ namespace Windows_365_Ethernet_Redirection
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (_vpnManager?.IsRunning == true)
+            {
+                _vpnManager.Stop();
+            }
+
             if (_socksServer?.IsConnected == true)
             {
                 _socksServer.Stop();

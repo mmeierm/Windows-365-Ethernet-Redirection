@@ -1,4 +1,4 @@
-﻿namespace Windows_365_Ethernet_Redirection
+namespace Windows_365_Ethernet_Redirection
 {
     partial class Form1
     {
@@ -30,6 +30,7 @@
         {
             btnConnect = new Button();
             chkDebugOutput = new CheckBox();
+            chkEnableVpn = new CheckBox();
             txtDebugOutput = new TextBox();
             lblStatus = new Label();
             SuspendLayout();
@@ -54,6 +55,18 @@
             chkDebugOutput.Text = "Enable Debug Output";
             chkDebugOutput.UseVisualStyleBackColor = true;
             chkDebugOutput.CheckedChanged += chkDebugOutput_CheckedChanged;
+            // 
+            // chkEnableVpn
+            // 
+            chkEnableVpn.AutoSize = true;
+            chkEnableVpn.Checked = true;
+            chkEnableVpn.CheckState = CheckState.Checked;
+            chkEnableVpn.Location = new Point(310, 17);
+            chkEnableVpn.Name = "chkEnableVpn";
+            chkEnableVpn.Size = new Size(200, 19);
+            chkEnableVpn.TabIndex = 4;
+            chkEnableVpn.Text = "Auto-start VPN Tunnel (All Traffic)";
+            chkEnableVpn.UseVisualStyleBackColor = true;
             // 
             // txtDebugOutput
             // 
@@ -83,6 +96,7 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(663, 331);
+            Controls.Add(chkEnableVpn);
             Controls.Add(lblStatus);
             Controls.Add(txtDebugOutput);
             Controls.Add(chkDebugOutput);
@@ -98,6 +112,7 @@
 
         private Button btnConnect;
         private CheckBox chkDebugOutput;
+        private CheckBox chkEnableVpn;
         private TextBox txtDebugOutput;
         private Label lblStatus;
     }
