@@ -4,7 +4,7 @@ namespace Windows_365_Ethernet_Redirection
     {
         private SocksServer? _socksServer;
         private bool _debugEnabled = false;
-        
+
         public Form1()
         {
             InitializeComponent();
@@ -27,20 +27,27 @@ namespace Windows_365_Ethernet_Redirection
                 // Disconnect
                 _socksServer.Stop();
                 UpdateUI(false);
+                LogMessage("Disconnected", alwaysShow: true);
             }
             else
             {
                 // Connect
                 bool success = _socksServer.Start();
                 UpdateUI(success);
-                
+
                 if (!success)
                 {
+                    LogMessage("Failed to start SOCKS server", alwaysShow: true);
                     MessageBox.Show(
                         "Failed to start the SOCKS server. Make sure you are running this application in an RDP session.",
                         "Connection Error",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
+                }
+                else
+                {
+                    LogMessage("Connected!", alwaysShow: true);
+                    LogMessage("Starting VPN Connection", alwaysShow: true);
                 }
             }
         }
@@ -48,13 +55,16 @@ namespace Windows_365_Ethernet_Redirection
         private void chkDebugOutput_CheckedChanged(object sender, EventArgs e)
         {
             _debugEnabled = chkDebugOutput.Checked;
-            
+
             if (!_debugEnabled)
             {
                 txtDebugOutput.Clear();
+                LogMessage("Debug output disabled - only showing important messages", alwaysShow: true);
             }
-            
-            LogMessage($"Debug output {(_debugEnabled ? "enabled" : "disabled")}");
+            else
+            {
+                LogMessage("Debug output enabled - showing all messages", alwaysShow: true);
+            }
         }
 
         private void UpdateUI(bool connected)
@@ -72,22 +82,30 @@ namespace Windows_365_Ethernet_Redirection
 
         private void SocksServer_OnLog(string message)
         {
-            LogMessage(message);
+            // Determine if this is an important message that should always be shown
+            bool isImportant = message.Contains("connected", StringComparison.OrdinalIgnoreCase) ||
+                              message.Contains("CLIENT PLUGIN IS CONNECTED", StringComparison.OrdinalIgnoreCase) ||
+                              message.Contains("started", StringComparison.OrdinalIgnoreCase) ||
+                              message.Contains("stopped", StringComparison.OrdinalIgnoreCase) ||
+                              message.Contains("error", StringComparison.OrdinalIgnoreCase) ||
+                              message.Contains("failed", StringComparison.OrdinalIgnoreCase);
+
+            LogMessage(message, alwaysShow: isImportant);
         }
 
-        private void LogMessage(string message)
+        private void LogMessage(string message, bool alwaysShow = false)
         {
-            if (!_debugEnabled)
+            if (!_debugEnabled && !alwaysShow)
                 return;
 
             if (InvokeRequired)
             {
-                Invoke(() => LogMessage(message));
+                Invoke(() => LogMessage(message, alwaysShow));
                 return;
             }
 
             txtDebugOutput.AppendText(message + Environment.NewLine);
-            
+
             // Auto-scroll to bottom
             txtDebugOutput.SelectionStart = txtDebugOutput.Text.Length;
             txtDebugOutput.ScrollToCaret();
@@ -100,5 +118,6 @@ namespace Windows_365_Ethernet_Redirection
                 _socksServer.Stop();
             }
         }
+
     }
 }

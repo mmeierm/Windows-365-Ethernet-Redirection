@@ -49,7 +49,7 @@
             chkDebugOutput.AutoSize = true;
             chkDebugOutput.Location = new Point(150, 17);
             chkDebugOutput.Name = "chkDebugOutput";
-            chkDebugOutput.Size = new Size(131, 19);
+            chkDebugOutput.Size = new Size(140, 19);
             chkDebugOutput.TabIndex = 1;
             chkDebugOutput.Text = "Enable Debug Output";
             chkDebugOutput.UseVisualStyleBackColor = true;
@@ -65,7 +65,7 @@
             txtDebugOutput.Name = "txtDebugOutput";
             txtDebugOutput.ReadOnly = true;
             txtDebugOutput.ScrollBars = ScrollBars.Both;
-            txtDebugOutput.Size = new Size(776, 363);
+            txtDebugOutput.Size = new Size(639, 244);
             txtDebugOutput.TabIndex = 2;
             txtDebugOutput.WordWrap = false;
             // 
@@ -74,14 +74,15 @@
             lblStatus.AutoSize = true;
             lblStatus.Location = new Point(12, 50);
             lblStatus.Name = "lblStatus";
-            lblStatus.Size = new Size(82, 15);
+            lblStatus.Size = new Size(77, 15);
             lblStatus.TabIndex = 3;
             lblStatus.Text = "Status: Ready";
             // 
             // Form1
             // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(663, 331);
             Controls.Add(lblStatus);
             Controls.Add(txtDebugOutput);
             Controls.Add(chkDebugOutput);
