@@ -21,7 +21,7 @@ namespace Windows_365_Ethernet_Redirection
             _vpnManager.OnLog += VpnManager_OnLog;
         }
 
-        private void btnConnect_Click(object sender, EventArgs e)
+        private async void btnConnect_Click(object sender, EventArgs e)
         {
             if (_socksServer == null)
                 return;
@@ -60,7 +60,7 @@ namespace Windows_365_Ethernet_Redirection
                     // Start VPN tunnel if checkbox is enabled
                     if (chkEnableVpn != null && chkEnableVpn.Checked && _vpnManager != null)
                     {
-                        bool vpnStarted = _vpnManager.Start("127.0.0.1", _socksServer.SocksPort);
+                        bool vpnStarted = await _vpnManager.StartAsync("127.0.0.1", _socksServer.SocksPort);
                         if (vpnStarted)
                         {
                             LogMessage("VPN tunnel active - all traffic is now routed through RDP connection", alwaysShow: true);
@@ -68,6 +68,7 @@ namespace Windows_365_Ethernet_Redirection
                         else
                         {
                             LogMessage("WARNING: Failed to start VPN tunnel. You can still use the SOCKS proxy manually.", alwaysShow: true);
+                            LogMessage("Note: VPN tunnel requires administrator privileges.", alwaysShow: true);
                         }
                     }
                     else
