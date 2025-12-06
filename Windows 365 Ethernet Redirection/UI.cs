@@ -1,12 +1,12 @@
 namespace Windows_365_Ethernet_Redirection
 {
-    public partial class Form1 : Form
+    public partial class UI : Form
     {
-        private SocksServer? _socksServer;
+        private SocksServerWrapper? _socksServer;
         private SocksToVpnManager? _vpnManager;
         private bool _debugEnabled = false;
 
-        public Form1()
+        public UI()
         {
             InitializeComponent();
             InitializeServer();
@@ -14,11 +14,29 @@ namespace Windows_365_Ethernet_Redirection
 
         private void InitializeServer()
         {
-            _socksServer = new SocksServer();
+            _socksServer = new SocksServerWrapper();
             _socksServer.OnLog += SocksServer_OnLog;
+            _socksServer.OnServerStopped += SocksServer_OnServerStopped;
 
             _vpnManager = new SocksToVpnManager();
             _vpnManager.OnLog += VpnManager_OnLog;
+        }
+
+        private void SocksServer_OnServerStopped()
+        {
+            // Handle unexpected server stop - cleanup VPN and update UI
+            LogMessage("SOCKS server stopped unexpectedly - cleaning up...", alwaysShow: true);
+
+            // Stop VPN tunnel if running
+            if (_vpnManager != null && _vpnManager.IsRunning)
+            {
+                LogMessage("Stopping VPN tunnel due to SOCKS server failure", alwaysShow: true);
+                _vpnManager.Stop();
+            }
+
+            // Update UI to disconnected state
+            UpdateUI(false);
+            LogMessage("Disconnected - please reconnect to restart services", alwaysShow: true);
         }
 
         private async void btnConnect_Click(object sender, EventArgs e)
@@ -48,7 +66,7 @@ namespace Windows_365_Ethernet_Redirection
                 {
                     LogMessage("Failed to start SOCKS server", alwaysShow: true);
                     MessageBox.Show(
-                        "Failed to start the SOCKS server. Make sure you are running this application in an RDP session.",
+                        "Failed to start the SOCKS server. Make sure SocksOverRDP-Server.exe is in the application directory and you are running this application in an RDP session.",
                         "Connection Error",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
