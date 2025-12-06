@@ -25,7 +25,7 @@ HKCR
 	}		
 }
 
-HKCU
+HKLM
 { 
 	Software
 	{
@@ -41,8 +41,6 @@ HKCU
 						{
 							val Name = s '{61715a27-63a8-4dc1-9857-83eb00fb60a3}'
 							val enabled = d '1'
-							val ip = s '127.0.0.1'
-							val port = s '1080'
 						}
 					}
 				}
