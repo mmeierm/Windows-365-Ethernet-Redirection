@@ -15,7 +15,7 @@ If you wish to remove it:
 
 `regsvr32.exe /u SocksOverRDP-Plugin.dll`
 
-**Every time you connect to an RDP server from now on, this plugin will be loaded and will configure itself as it was specified in the registry (see below).**
+**Every time you connect to an RDP server from now on, this plugin will be loaded and will allow you to run the server to connect to the client network**
 
 ### Installation Server side ###
 The *SocksOverRDPServer.exe* needs to be copied to the server in the same Folder as the *Windows 365 Ethernet Redirection.exe*. For the VPN Part we need the tun2socks.exe from https://github.com/xjasonlyu/tun2socks placed in a SubFolder called "SocksToVPN". We also need the matching version of the wintun driver from here in the same folder https://www.wintun.net/
